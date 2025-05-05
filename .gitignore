@@ -1,0 +1,19 @@
+# code editor
+.vscode
+.idea
+.conda
+
+# env
+__pycache__/
+venv
+.venv
+.env
+
+# dev folders
+notebooks
+test.py
+run.sh
+
+# archive folder
+*.zip
+
