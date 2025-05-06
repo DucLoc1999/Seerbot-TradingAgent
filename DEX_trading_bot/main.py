@@ -2,9 +2,11 @@ from web3 import Web3
 from web3.middleware import ExtraDataToPOAMiddleware
 from web3.exceptions import TransactionNotFound, ContractLogicError
 from web3.types import HexStr
-import sqlite3
-con = sqlite3.connect("sqlite.db")
-cur = con.cursor()
+from sqlalchemy import create_engine, text
+from config.db import DB
+
+conn = create_engine(f"mysql+pymysql://{DB['user']}:{DB['password']}@{DB['host']}:{DB['port']}/{DB['database']}")
+
 
 # from . import config
 import time, json, requests
@@ -414,7 +416,6 @@ class DEXSwapBot():
     
     def get_trade_decision(self) -> tuple:
         # set your trade strategy here
-        # get decision from vistiaAI 
         order_pair = None
         amount = 0
         res = requests.get("https://api.vistia.co/api/v2/al-trade/top-over-sold/v2.2?heatMapType=rsi7&interval=5m")
@@ -510,7 +511,7 @@ class BotManager():
         return names
     
     def save_bot_state(self, bot_name=None):
-        cur = con.cursor()
+        cur = self.db_connect.cursor()
         bots = self.bots if bot_name is None else [self.get_bot(bot_name)]
         ts = int(time.time())
         # res = cur.execute("""CREATE TABLE IF NOT EXISTS bot_report(time, name, address,token_1,token_2,amount_1,amount_2,invert,roi)""")
@@ -593,9 +594,8 @@ if __name__ == "__main__":
  - report
  - reallocate """)
 
-    con = sqlite3.connect("sqlite.db")
     bm = BotManager(
-        db_connect=con,
+        db_connect=conn,
         wallet=wallet,
         gateway=web3_gateway,
         swap_router=router,

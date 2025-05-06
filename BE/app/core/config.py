@@ -6,7 +6,7 @@ from pydantic_settings import BaseSettings
 load_dotenv(override=True)
 
 class Settings(BaseSettings):
-    PROJECT_NAME: str = "Vistia"
+    PROJECT_NAME: str = "SeerBOT"
     # Application settings
     PORT: int | None = os.getenv("PORT")
     PROTOCOL: str | None = os.getenv("PROTOCOL")

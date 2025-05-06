@@ -2,9 +2,12 @@ import os
 import sys
 import requests
 import pandas as pd
-import sqlite3
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from sqlalchemy import create_engine
+from config.db import DB
+
+conn = create_engine(f"mysql+pymysql://{DB['user']}:{DB['password']}@{DB['host']}:{DB['port']}/{DB['database']}")
 
 # Load environment variables
 load_dotenv()
@@ -16,11 +19,9 @@ GECKO_API_URL = os.getenv(
 )
 # Comma-separated list of token IDs, e.g. "cardano,liquidity-token,another-token"
 TOKEN_IDS = os.getenv("TOKEN_IDS", "cardano").split(",")
-DB_PATH     = os.getenv("DB_PATH", "token_prices.sqlite")
 TABLE_NAME  = os.getenv("TABLE_NAME", "token_prices")
 
 # Ensure database and table exist
-conn = sqlite3.connect(DB_PATH)
 cur = conn.cursor()
 cur.execute(f"""
 CREATE TABLE IF NOT EXISTS {TABLE_NAME} (
