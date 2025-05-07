@@ -1,12 +1,8 @@
-# SonicSwap AI Trading Assistant
-
-## 🏆 Sonic DeFAI Hackathon Submission
-
-This project is submission for the Sonic DeFAI Hackathon competition. I've built an integrated AI Trading Assistant that operates on the Sonic Network.
+# Seerbot AI Trading Assistant
 
 ## 🚀 Overview
 
-SonicSwap is a next-generation decentralized exchange (DEX) built on the Sonic Network. While the full DEX interface is under development, our AI Trading Assistant is fully operational, allowing users to perform trades, analyze markets, and manage their crypto assets through natural language conversation.
+Seerbot is a next-generation decentralized exchange (DEX) built on the Sonic Network. While the full DEX interface is under development, our AI Trading Assistant is fully operational, allowing users to perform trades, analyze markets, and manage their crypto assets through natural language conversation.
 
 ## ✨ Key Features
 
