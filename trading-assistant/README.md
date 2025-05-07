@@ -2,14 +2,14 @@
 
 ## 🚀 Overview
 
-Seerbot is a next-generation decentralized exchange (DEX) built on the Sonic Network. While the full DEX interface is under development, our AI Trading Assistant is fully operational, allowing users to perform trades, analyze markets, and manage their crypto assets through natural language conversation.
+Seerbot is a next-generation decentralized exchange (DEX) built on the Cardano. While the full DEX interface is under development, our AI Trading Assistant is fully operational, allowing users to perform trades, analyze markets, and manage their crypto assets through natural language conversation.
 
 ## ✨ Key Features
 
 ### AI Trading Assistant
 
-- **Token Swaps**: Easily swap tokens on Sonic Network with simple commands like "Swap 1 S to USDC"
-- **Bridge Functionality**: Bridge tokens between Sonic Network and other chains with commands like "Bridge 10 POL from Polygon to Sonic"
+- **Token Swaps**: Easily swap tokens on Cardano with simple commands like "Swap 1 ADA to USDC"
+- **Bridge Functionality**: Bridge tokens between Cardano and other chains with commands like "Bridge 10 ADA from Binance Smart Chain to Cardano"
 - **Contract Balance Management**: Deposit and withdraw tokens from the assistant's contract
   - Deposit: "Deposit 5 S into the contract"
   - Withdraw: "Withdraw my USDC from the contract"
@@ -29,7 +29,7 @@ Seerbot is a next-generation decentralized exchange (DEX) built on the Sonic Net
 - **Frontend**: Next.js 15, React, TypeScript
 - **Styling**: Tailwind CSS
 - **AI Integration**: ChatGPT-4o
-- **Blockchain**: Sonic Network
+- **Blockchain**: Cardano
 - **Authentication**: JWT-based authentication
 - **Data Storage**: Supabase
 - **APIs**: deBridge, Odos, Coingecko
@@ -39,7 +39,7 @@ Seerbot is a next-generation decentralized exchange (DEX) built on the Sonic Net
 - Node.js 18.x or higher
 - npm, yarn, pnpm, or bun
 - A modern web browser
-- MetaMask or another Web3 wallet with Sonic Network configured
+- Lace or another Web3 wallet
 
 ## 🚀 Getting Started
 
@@ -126,8 +126,8 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 🙏 Acknowledgements
 
-- The Sonic Network team for creating an amazing platform
-- The Sonic DeFAI Hackathon organizers for the opportunity
+- The Cardano team for creating an amazing platform
+- The Cardano Blockchain Hackathon organizers for the opportunity
 - All open-source libraries and tools that made this project possible
 
-Built with ❤️ for the Sonic DeFAI Hackathon
+Built with ❤️ for the Cardano Blockchain Hackathon
