@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useWallet, useWalletList } from '@meshsdk/react';
 import { Button } from '@/components/ui/button';
 
 function ConnectWalletClient() {
@@ -9,9 +10,16 @@ function ConnectWalletClient() {
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
 
+  const { wallet, connected, connect, name } = useWallet();
+  const wallets = useWalletList();
+
   useEffect(() => {
+    if (!connected) {
+      connect('lace');
+      console.log('Connected to Lace');
+    }
     setIsMounted(true);
-  }, []);
+  }, [connected, connect]);
 
   useEffect(() => {
     const checkConnection = async () => {
@@ -59,6 +67,12 @@ function ConnectWalletClient() {
       // console.log('Available methods:', Object.keys(lace));
 
       if (usedAddresses.length > 0) {
+        for (const wallet of wallets) {
+          if (wallet.name.toLowerCase() === 'lace') {
+            await connect(wallet.name);
+            break;
+          }
+        }
         setIsConnected(true);
         setAddress(usedAddresses[0]);
       }

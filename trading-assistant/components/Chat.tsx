@@ -3,6 +3,7 @@
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import type { JSX } from 'react';
 import { Message, useChat } from '@ai-sdk/react';
+import { useWallet, useWalletList } from '@meshsdk/react';
 import { createIdGenerator } from 'ai';
 import { useAccount, useDisconnect } from 'wagmi';
 import { MarkdownContent } from '@/components/MarkdownContent';
@@ -13,7 +14,7 @@ import { Card } from '@/components/ui/card';
 import { IconArrowUp } from '@/components/ui/icons';
 import { Input } from '@/components/ui/input';
 import WelcomeCard from '@/components/WelcomeCard';
-import { swapTokensWithLace } from '@/lib/sign-txn-ada';
+import { hexToBech32, swapTokensWithLace } from '@/lib/sign-txn-ada';
 import { ChatProps, MessageContent } from '@/types/chat';
 import TransactionModal from './modals/TransactionModal';
 
@@ -68,9 +69,20 @@ const AIMessage = memo(function AIMessage({
 export function Chat({ userId, initialMessages, isAuthenticated }: ChatProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [visibleMessagesCount, setVisibleMessagesCount] = useState(50);
-  const { chainId } = useAccount();
-  const { disconnect } = useDisconnect();
   const [showModal, setShowModal] = useState(false);
+
+  const { wallet, connected, connect, name } = useWallet();
+  const wallets = useWalletList();
+
+  // useEffect(() => {
+  //   if (!connected) {
+  //     for (const wallet of wallets) {
+  //       if (wallet.name.toLowerCase() === 'lace') {
+  //         connect(wallet.name);
+  //       }
+  //     }
+  //   }
+  // }, [connected, connect, wallets]);
 
   const scrollToBottom = useCallback(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -91,10 +103,6 @@ export function Chat({ userId, initialMessages, isAuthenticated }: ChatProps) {
       size: 32,
     }),
     sendExtraMessageFields: true,
-    body: { chainId },
-    onResponse: async (res) => {
-      if (res.status === 401) disconnect();
-    },
     onFinish: async (res) => {
       try {
         // Check for prep data
@@ -115,8 +123,8 @@ export function Chat({ userId, initialMessages, isAuthenticated }: ChatProps) {
 
             const swapData = prepedData.result.preparedData;
             const { fromAsset, toAsset, amountIn, estimatedAmountOutMin: amountOutMin } = swapData;
-            // const txnHash = await swapTokensWithLace(fromAsset, toAsset, amountIn, amountOutMin, walletAddress);
-            // console.log('txnHash: ', txnHash);
+            // const txnHash = await swapTokensWithLace(fromAsset, toAsset, amountIn, amountOutMin, hexToBech32(walletAddress));
+            // console.log('txnHash:', txnHash);
             setShowModal(false);
           }
         }

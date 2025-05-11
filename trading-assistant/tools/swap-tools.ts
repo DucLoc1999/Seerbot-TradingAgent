@@ -1,7 +1,7 @@
 import { tool } from 'ai';
 import { z } from 'zod';
 import { checkAuth } from '@/app/actions/auth';
-import { getAmountOut, resolveTokenAddress, lovelaceToAda } from '@/utils/cardano-utils';
+import { getAmountOut, resolveTokenAddress, lovelaceToAda, getTokenDecimal } from '@/utils/cardano-utils';
 
 const swapParamsSchema = z.object({
   fromToken: z.string().describe('Source token symbol (e.g. "ADA", "MIN")'),
@@ -40,10 +40,15 @@ export const getSwapQuote = tool({
         params.amount,
         params.slippage
       );
+      console.log({ amountOut, amountOutMin });
+
+      // Get token decimal
+      const toTokenDecimal = await getTokenDecimal(toAsset);
+      console.log({ toTokenDecimal });
 
       // Form a response
-      const estAmountOut = lovelaceToAda(Number(amountOut.toString()));
-      const estAmountOutMin = lovelaceToAda(Number(amountOutMin.toString()));
+      const estAmountOut = lovelaceToAda(Number(amountOut.toString()), toTokenDecimal);
+      const estAmountOutMin = lovelaceToAda(Number(amountOutMin.toString()), toTokenDecimal);
       const content = `You're set to receive approximately ${estAmountOut} ${params.toToken}.
       With slippage of ${params.slippage}%, you will receive ${estAmountOutMin} at the minimal.
       Do you want to proceed?`;
@@ -53,6 +58,7 @@ export const getSwapQuote = tool({
         toToken: params.toToken,
         amountIn: params.amount,
         estimatedAmountOut: estAmountOut.toString(),
+        estimatedAmountOutMin: estAmountOutMin.toString(),
       };
 
       console.log('getSwapQuote return: ', {
@@ -103,9 +109,12 @@ export const prepForSwapAda = tool({
         params.slippage
       );
 
+      // Get token decimal
+      const toTokenDecimal = await getTokenDecimal(toAsset);
+
       // Form a response
-      const estAmountOut = lovelaceToAda(Number(amountOut.toString()));
-      const estAmountOutMin = lovelaceToAda(Number(amountOutMin.toString()));
+      const estAmountOut = lovelaceToAda(Number(amountOut.toString()), toTokenDecimal);
+      const estAmountOutMin = lovelaceToAda(Number(amountOutMin.toString()), toTokenDecimal);
       const content = `Transaction prepared. Please sign this in your Lace wallet.
       You're set to receive approximately ${estAmountOut} ${params.toToken}.
       With slippage of ${params.slippage}%, you will receive ${estAmountOutMin} at the minimal.`;

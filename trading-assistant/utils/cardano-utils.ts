@@ -5,9 +5,19 @@ import {
     BlockfrostAdapter,
     NetworkId, 
 } from "@minswap/sdk";
+import { readdirSync, readFileSync } from 'fs';
+import { join } from 'path';
+
+type PoolAddress = {
+    poolAddress: string;
+    tokenA: string;
+    tokenB: string;
+  }
 
 // Initialize BlockFrost
+let _api: BlockFrostAPI | null = null;
 function initBlockfrostAPI() {
+    if (_api) return _api;
     const api_key = process.env.BLOCKFROST_API_KEY || 'mainnetkLL9cHgKyVFcl1kdHHqzoZr8pqoMV41k';
     return new BlockFrostAPI({
         projectId: api_key,
@@ -15,18 +25,20 @@ function initBlockfrostAPI() {
 }
 
 // Initialize Adapters
+let _adapter: BlockfrostAdapter | null = null;
 function initAdapter() {
+    if (_adapter) return _adapter;
     const bf = initBlockfrostAPI();
-    const adapter = new BlockfrostAdapter({
+    _adapter = new BlockfrostAdapter({
         networkId: NetworkId.MAINNET,
         blockFrost: bf,
     })
-    return adapter;
+    return _adapter;
 }
 
 // Helper function to convert lovelace to ADA
-function lovelaceToAda(lovelace: number): number {
-  return lovelace / 1000000;
+function lovelaceToAda(lovelace: number, decimal: number): number {
+  return lovelace / (10 ** decimal);
 }
 
 // Helper function to convert ADA to lovelace
@@ -53,9 +65,7 @@ async function getTokenDecimal(assetString: string): Promise<number> {
   return asset.metadata?.decimals ?? 0;
 }
 
-async function findPoolAddress(fromAsset: string, toAsset: string): Promise<string | null> {
-    console.log('----- Find pool address -----')
-    console.log({ fromAsset, toAsset });
+async function findPoolAddress(fromAsset: string, toAsset: string): Promise<PoolAddress | null> {
     try {
         const adapter = initAdapter();
         const poolv2 = await adapter.getV2PoolByPair(
@@ -64,32 +74,37 @@ async function findPoolAddress(fromAsset: string, toAsset: string): Promise<stri
         );
         if (!poolv2) {
             console.log('Pool not found in V2. Searching in V1...');
-            const pools = await adapter.getV1Pools({
-                page: 1,
-                count: 100,
-                order: 'asc'
-            });
-            console.log({ poolsv1: pools });
+            const folderPath = './v1pools';
+            const files = readdirSync(folderPath);
+            const pools = files
+              .filter(file => file.endsWith('.json'))
+              .map(file => {
+                const content = readFileSync(join(folderPath, file), 'utf-8');
+                return JSON.parse(content);
+              }).flat();
             for (const pool of pools) {
-                console.log({ pool, fromAsset, toAsset });
                 if (
                     (pool.assetA === fromAsset && pool.assetB === toAsset) || 
                     (pool.assetA === toAsset && pool.assetB === fromAsset)
                 ) {
-                    return pool.address;
+                    return {poolAddress: pool.address, tokenA: pool.assetA, tokenB: pool.assetB};
                 }
             }
+            console.log('pools length:', pools.length);
             throw new Error("Pool not found");
         }
     
-        return poolv2.address;
+        return {poolAddress: poolv2.address, tokenA: poolv2.assetA, tokenB: poolv2.assetB};
     } catch (error) {
         console.error('Failed to fetch liquidity pool:', error);
         return null;
     }
 }
 
-async function getPoolState(poolAddress: string): Promise<{ reserveIn: string, reserveOut: string }> {
+async function getPoolState(poolAddress: string | null): Promise<{ reserveIn: string, reserveOut: string }> {
+  if (!poolAddress) {
+    throw new Error('Pool address is null');
+  }
   try {
     const bf = initBlockfrostAPI();
     const utxos = await bf.addressesUtxos(poolAddress);
@@ -114,41 +129,41 @@ async function getPoolState(poolAddress: string): Promise<{ reserveIn: string, r
 }
 
 export async function getAmountOut(
-  fromAsset: string,
-  toAsset: string,
-  amount: string,
-  slippage: number
-): Promise<{ amountOut: bigint, amountOutMin: bigint }> {
-  try {
-    console.log('----- Get amount out calleds -----')
-    console.log('params: ',{ fromAsset, toAsset, amount, slippage });
-    // Get pool information
-    const poolAddress = await findPoolAddress(fromAsset, toAsset);
-    if (!poolAddress) {
-      throw new Error('Pool not found');
+    fromAsset: string,
+    toAsset: string,
+    amount: string,
+    slippage: number
+  ): Promise<{ amountOut: bigint, amountOutMin: bigint }> {
+    try {
+      // Get pool information
+      const poolInfo = await findPoolAddress(fromAsset, toAsset);
+      console.log('poolInfo:', poolInfo);
+      if (!poolInfo) {
+        throw new Error('Pool not found');
+      }
+      const { poolAddress, tokenA, tokenB } = poolInfo;
+  
+      // Get pool state
+      const poolState = await getPoolState(poolAddress);
+      
+      // Calculate amount out using constant product formula (x * y = k)
+      const amountIn = BigInt(adaToLovelace(Number(amount)));
+      const reserveIn = tokenA === fromAsset ? BigInt(poolState.reserveIn) : BigInt(poolState.reserveOut);
+      const reserveOut = tokenA === fromAsset ? BigInt(poolState.reserveOut) : BigInt(poolState.reserveIn);
+      
+      // Calculate amount out with 0.3% fee
+      const amountInWithFee = amountIn * BigInt(997) / BigInt(1000);
+      const amountOut = (amountInWithFee * reserveOut) / (reserveIn + amountInWithFee);
+      
+      // Calculate minimum amount out with slippage
+      const amountOutMin = amountOut * BigInt(Math.floor((1 - slippage / 100) * 1000)) / BigInt(1000);
+  
+      return { amountOut, amountOutMin };
+    } catch (error) {
+      console.error('Error calculating amount out:', error);
+      throw error;
     }
-
-    // Get pool state
-    const poolState = await getPoolState(poolAddress);
-    
-    // Calculate amount out using constant product formula (x * y = k)
-    const amountIn = BigInt(amount);
-    const reserveIn = BigInt(poolState.reserveIn);
-    const reserveOut = BigInt(poolState.reserveOut);
-    
-    // Calculate amount out with 0.3% fee
-    const amountInWithFee = amountIn * BigInt(997) / BigInt(1000);
-    const amountOut = (amountInWithFee * reserveOut) / (reserveIn + amountInWithFee);
-    
-    // Calculate minimum amount out with slippage
-    const amountOutMin = amountOut * BigInt(Math.floor((1 - slippage) * 1000)) / BigInt(1000);
-
-    return { amountOut, amountOutMin };
-  } catch (error) {
-    console.error('Error calculating amount out:', error);
-    throw error;
   }
-}
 
 export async function resolveTokenAddress(ticker: string): Promise<string> {
   if (ticker.toLowerCase() === 'ada') {

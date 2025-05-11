@@ -10,12 +10,8 @@ Seerbot is a next-generation decentralized exchange (DEX) built on the Cardano. 
 
 - **Token Swaps**: Easily swap tokens on Cardano with simple commands like "Swap 1 ADA to USDC"
 - **Bridge Functionality**: Bridge tokens between Cardano and other chains with commands like "Bridge 10 ADA from Binance Smart Chain to Cardano"
-- **Contract Balance Management**: Deposit and withdraw tokens from the assistant's contract
-  - Deposit: "Deposit 5 S into the contract"
-  - Withdraw: "Withdraw my USDC from the contract"
-- **Limit Orders**: Set up to 10 limit orders with commands like "Set a limit order to buy S at 0.45 USDC"
-- **Market Analysis**: Get real-time price data and trend analysis for any token with "Analyze S price trends"
-- **Custom Token Management**: Add custom tokens to your wallet with "Add USDC to my wallet"
+- **Limit Orders**: Set up to 10 limit orders with commands like "Set a limit order to buy ADA at 0.67 USDC"
+- **Market Analysis**: Get real-time price data and trend analysis for any token with "Analyze ADA price trends"
 
 ### Coming Soon
 
@@ -26,7 +22,7 @@ Seerbot is a next-generation decentralized exchange (DEX) built on the Cardano. 
 
 ## 🛠️ Technology Stack
 
-- **Frontend**: Next.js 15, React, TypeScript
+- **Frontend**: Next.js, React, TypeScript
 - **Styling**: Tailwind CSS
 - **AI Integration**: ChatGPT-4o
 - **Blockchain**: Cardano
@@ -39,7 +35,7 @@ Seerbot is a next-generation decentralized exchange (DEX) built on the Cardano. 
 - Node.js 18.x or higher
 - npm, yarn, pnpm, or bun
 - A modern web browser
-- Lace or another Web3 wallet
+- Lace wallet
 
 ## 🚀 Getting Started
 
